@@ -17,6 +17,18 @@ export async function GET() {
 // POST /api/todos - Create a new todo
 export async function POST(request: NextRequest) {
   try {
+    // Add delay to visualize optimistic updates (1.5 seconds)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Check for error simulation header
+    const simulateError = request.headers.get('x-simulate-error') === 'true'
+    if (simulateError) {
+      return NextResponse.json(
+        { error: 'Simulated error: Server rejected the request' },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
     const { title } = body
 

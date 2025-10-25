@@ -11,6 +11,18 @@ export async function PUT(
   { params }: RouteParams
 ) {
   try {
+    // Add delay to visualize optimistic updates (1.5 seconds)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Check for error simulation header
+    const simulateError = request.headers.get('x-simulate-error') === 'true'
+    if (simulateError) {
+      return NextResponse.json(
+        { error: 'Simulated error: Server rejected the update' },
+        { status: 500 }
+      )
+    }
+
     const { id } = await params
     const body = await request.json()
 
@@ -38,6 +50,18 @@ export async function DELETE(
   { params }: RouteParams
 ) {
   try {
+    // Add delay to visualize optimistic updates (1.5 seconds)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Check for error simulation header
+    const simulateError = request.headers.get('x-simulate-error') === 'true'
+    if (simulateError) {
+      return NextResponse.json(
+        { error: 'Simulated error: Server rejected the delete' },
+        { status: 500 }
+      )
+    }
+
     const { id } = await params
     const success = await db.todos.delete(id)
 

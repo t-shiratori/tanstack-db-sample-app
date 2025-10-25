@@ -3,6 +3,8 @@
 import { createCollection } from '@tanstack/react-db'
 import { queryCollectionOptions } from '@tanstack/query-db-collection'
 import { queryClient } from '@/app/lib/queryClient'
+import { errorSimulation } from '@/lib/errorSimulation'
+import { notification } from '@/lib/notification'
 import { Todo } from '@/types/todo'
 
 // TanStack DB Collection for Todos
@@ -42,20 +44,29 @@ export const todoCollection = createCollection(
 
       const { original, modified } = mutation
 
-      // Send update to backend API
-      const response = await fetch(`/api/todos/${original.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(modified),
-      })
+      try {
+        // Send update to backend API
+        const response = await fetch(`/api/todos/${original.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(errorSimulation.enabled && { 'x-simulate-error': 'true' }),
+          },
+          body: JSON.stringify(modified),
+        })
 
-      if (!response.ok) {
-        throw new Error('Failed to update todo')
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          const errorMessage = errorData.error || 'Failed to update todo'
+          notification.error(`Update failed: ${errorMessage}`)
+          throw new Error(errorMessage)
+        }
+
+        return response.json()
+      } catch (error) {
+        // Re-throw error for TanStack DB to handle rollback
+        throw error
       }
-
-      return response.json()
     },
 
     // Handle deletes when items are removed
@@ -65,13 +76,24 @@ export const todoCollection = createCollection(
 
       const { original } = mutation
 
-      // Send delete to backend API
-      const response = await fetch(`/api/todos/${original.id}`, {
-        method: 'DELETE',
-      })
+      try {
+        // Send delete to backend API
+        const response = await fetch(`/api/todos/${original.id}`, {
+          method: 'DELETE',
+          headers: {
+            ...(errorSimulation.enabled && { 'x-simulate-error': 'true' }),
+          },
+        })
 
-      if (!response.ok) {
-        throw new Error('Failed to delete todo')
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          const errorMessage = errorData.error || 'Failed to delete todo'
+          notification.error(`Delete failed: ${errorMessage}`)
+          throw new Error(errorMessage)
+        }
+      } catch (error) {
+        // Re-throw error for TanStack DB to handle rollback
+        throw error
       }
     },
 
@@ -82,23 +104,32 @@ export const todoCollection = createCollection(
 
       const { modified } = mutation
 
-      // Send create to backend API
-      const response = await fetch('/api/todos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: modified.title,
-          completed: modified.completed,
-        }),
-      })
+      try {
+        // Send create to backend API
+        const response = await fetch('/api/todos', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(errorSimulation.enabled && { 'x-simulate-error': 'true' }),
+          },
+          body: JSON.stringify({
+            title: modified.title,
+            completed: modified.completed,
+          }),
+        })
 
-      if (!response.ok) {
-        throw new Error('Failed to create todo')
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          const errorMessage = errorData.error || 'Failed to create todo'
+          notification.error(`Create failed: ${errorMessage}`)
+          throw new Error(errorMessage)
+        }
+
+        return response.json()
+      } catch (error) {
+        // Re-throw error for TanStack DB to handle rollback
+        throw error
       }
-
-      return response.json()
     },
   })
 )
