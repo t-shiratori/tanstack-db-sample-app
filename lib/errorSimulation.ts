@@ -3,10 +3,10 @@
 let _simulateError = false;
 
 export const errorSimulation = {
-	get enabled() {
-		return _simulateError;
-	},
-	set enabled(value: boolean) {
-		_simulateError = value;
-	},
+  get enabled() {
+    return _simulateError;
+  },
+  set enabled(value: boolean) {
+    _simulateError = value;
+  },
 };

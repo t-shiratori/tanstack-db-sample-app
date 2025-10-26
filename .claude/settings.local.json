@@ -1,12 +1,7 @@
 {
-	"permissions": {
-		"allow": [
-			"Bash(pnpm view:*)",
-			"Bash(pnpm dev:*)",
-			"Bash(pnpm add:*)",
-			"Bash(pnpm biome:*)"
-		],
-		"deny": [],
-		"ask": []
-	}
+  "permissions": {
+    "allow": ["Bash(pnpm view:*)", "Bash(pnpm dev:*)", "Bash(pnpm add:*)", "Bash(pnpm biome:*)"],
+    "deny": [],
+    "ask": []
+  }
 }
