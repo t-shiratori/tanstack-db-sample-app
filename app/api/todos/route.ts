@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title } = body;
+    const { title, userId, categoryId } = body;
 
     if (!title || typeof title !== "string") {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
     const newTodo = await db.todos.create({
       title,
       completed: false,
+      userId,
+      categoryId,
     });
 
     return NextResponse.json(newTodo, { status: 201 });

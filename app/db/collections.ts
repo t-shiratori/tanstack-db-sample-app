@@ -101,6 +101,8 @@ export const todoCollection = createCollection(
         body: JSON.stringify({
           title: modified.title,
           completed: modified.completed,
+          userId: modified.userId,
+          categoryId: modified.categoryId,
         }),
       });
 

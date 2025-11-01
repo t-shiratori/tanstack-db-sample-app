@@ -1,6 +1,8 @@
 "use client";
 
-import { todoCollection } from "@/app/db/collections";
+import { useLiveQuery } from "@tanstack/react-db";
+import { useState } from "react";
+import { categoryCollection, todoCollection } from "@/app/db/collections";
 import type { Todo } from "@/types/todo";
 
 interface TodoItemProps {
@@ -8,12 +10,28 @@ interface TodoItemProps {
 }
 
 export function TodoItem({ todo }: TodoItemProps) {
+  const [isEditingCategory, setIsEditingCategory] = useState(false);
+
+  // Get all categories for the dropdown
+  const { data: categories = [] } = useLiveQuery((q) => q.from({ c: categoryCollection }));
+
+  // Find the current category
+  const currentCategory = categories.find((c) => c.id === todo.categoryId);
+
   // Optimistic mutation - Toggle completion status
   // This updates the UI immediately and syncs with the server in the background
   const handleToggle = () => {
     todoCollection.update(todo.id, (draft) => {
       draft.completed = !draft.completed;
     });
+  };
+
+  // Optimistic mutation - Update category
+  const handleCategoryChange = (newCategoryId: string | undefined) => {
+    todoCollection.update(todo.id, (draft) => {
+      draft.categoryId = newCategoryId;
+    });
+    setIsEditingCategory(false);
   };
 
   // Optimistic mutation - Delete todo
@@ -34,6 +52,34 @@ export function TodoItem({ todo }: TodoItemProps) {
 
       {/* Todo title */}
       <span className={`flex-1 ${todo.completed ? "line-through text-gray-400" : "text-gray-800"}`}>{todo.title}</span>
+
+      {/* Category badge or dropdown */}
+      {isEditingCategory ? (
+        <select
+          value={todo.categoryId || ""}
+          onChange={(e) => handleCategoryChange(e.target.value || undefined)}
+          onBlur={() => setIsEditingCategory(false)}
+          className="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">カテゴリなし</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsEditingCategory(true)}
+          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+            currentCategory ? "text-white hover:opacity-80" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+          style={currentCategory ? { backgroundColor: currentCategory.color } : undefined}
+        >
+          {currentCategory ? currentCategory.name : "カテゴリなし"}
+        </button>
+      )}
 
       {/* Created date */}
       <span className="text-xs text-gray-400">
