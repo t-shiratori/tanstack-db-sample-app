@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useErrorSimulation } from "@/app/contexts/ErrorSimulationContext";
+import { useErrorSimulation } from '@/app/contexts/ErrorSimulationContext';
 
 export function ErrorSimulationToggle() {
   const { simulateError, setSimulateError } = useErrorSimulation();
@@ -9,8 +9,12 @@ export function ErrorSimulationToggle() {
     <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-yellow-900 mb-1">Error Simulation Mode</h3>
-          <p className="text-sm text-yellow-700">Enable to test optimistic update rollback when server requests fail</p>
+          <h3 className="font-semibold text-yellow-900 mb-1">
+            エラーシミュレーションモード
+          </h3>
+          <p className="text-sm text-yellow-700">
+            サーバーリクエスト失敗時の楽観的更新のロールバックをテストするために有効化
+          </p>
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
           <input
@@ -24,7 +28,8 @@ export function ErrorSimulationToggle() {
       </div>
       {simulateError && (
         <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-          ⚠️ All update, delete, and create operations will fail. Watch the UI revert to original state after the error.
+          ⚠️
+          すべての更新、削除、作成操作が失敗します。エラー後にUIが元の状態に戻る様子を確認してください。
         </div>
       )}
     </div>

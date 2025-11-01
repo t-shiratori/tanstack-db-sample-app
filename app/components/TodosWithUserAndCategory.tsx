@@ -78,25 +78,23 @@ export function TodosWithUserAndCategory() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-4">
-          Cross-Collection JOIN Examples
-        </h2>
+        <h2 className="text-2xl font-bold mb-4">コレクション間 JOIN の例</h2>
         <p className="text-gray-600 mb-6">
-          TanStack DB supports native cross-collection JOINs with reactive live
-          queries. The examples below demonstrate INNER JOIN, LEFT JOIN, and
-          multi-table JOINs using the{' '}
+          TanStack DB は、リアクティブなライブクエリでネイティブなコレクション間
+          JOIN をサポートしています。 以下の例では、
           <code className="bg-gray-100 px-2 py-1 rounded text-sm">.join()</code>{' '}
-          method.
+          メソッドを使用した INNER JOIN、LEFT JOIN、および複数テーブル JOIN
+          を実演します。
         </p>
       </div>
 
       {/* Example 1: Todos with Users */}
       <div className="border rounded-lg p-6 bg-blue-50">
         <h3 className="text-lg font-semibold mb-3 text-blue-900">
-          Example 1: Todos with Users (Many-to-One JOIN)
+          例1: Todo とユーザーの結合（多対一 INNER JOIN）
         </h3>
         <p className="text-sm text-blue-700 mb-4">
-          Similar to SQL:{' '}
+          SQL に相当:{' '}
           <code className="bg-blue-100 px-2 py-1 rounded">
             SELECT * FROM todos JOIN users ON todos.userId = users.id
           </code>
@@ -115,7 +113,7 @@ export function TodosWithUserAndCategory() {
                 <div className="flex-1">
                   <div className="font-medium">{todo.title}</div>
                   <div className="text-sm text-gray-600">
-                    Created by: {todo.userName}
+                    作成者: {todo.userName}
                   </div>
                 </div>
               </div>
@@ -127,10 +125,10 @@ export function TodosWithUserAndCategory() {
       {/* Example 2: Todos with Categories */}
       <div className="border rounded-lg p-6 bg-green-50">
         <h3 className="text-lg font-semibold mb-3 text-green-900">
-          Example 2: Todos with Categories (LEFT JOIN)
+          例2: Todo とカテゴリの結合（LEFT JOIN）
         </h3>
         <p className="text-sm text-green-700 mb-4">
-          Similar to SQL:{' '}
+          SQL に相当:{' '}
           <code className="bg-green-100 px-2 py-1 rounded">
             SELECT * FROM todos LEFT JOIN categories ON todos.categoryId =
             categories.id
@@ -150,7 +148,7 @@ export function TodosWithUserAndCategory() {
                   </span>
                 ) : (
                   <span className="px-3 py-1 rounded-full text-sm bg-gray-200 text-gray-600">
-                    No Category
+                    カテゴリなし
                   </span>
                 )}
               </div>
@@ -162,10 +160,10 @@ export function TodosWithUserAndCategory() {
       {/* Example 3: Full JOIN */}
       <div className="border rounded-lg p-6 bg-purple-50">
         <h3 className="text-lg font-semibold mb-3 text-purple-900">
-          Example 3: Complete View (Multi-table JOIN)
+          例3: 完全なビュー（複数テーブル JOIN）
         </h3>
         <p className="text-sm text-purple-700 mb-4">
-          SQL:{' '}
+          SQL に相当:{' '}
           <code className="bg-purple-100 px-2 py-1 rounded text-xs">
             SELECT * FROM todos JOIN users ON todos.userId = users.id LEFT JOIN
             categories ON todos.categoryId = categories.id
@@ -192,11 +190,11 @@ export function TodosWithUserAndCategory() {
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >
-                      {todo.completed ? 'Done' : 'Todo'}
+                      {todo.completed ? '完了' : '未完了'}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    By {todo.userName}
+                    作成者: {todo.userName}
                     {todo.categoryName && todo.categoryColor && (
                       <span
                         className="ml-2 px-2 py-0.5 rounded text-xs text-white"
@@ -215,17 +213,18 @@ export function TodosWithUserAndCategory() {
 
       {/* Code Example */}
       <div className="border rounded-lg p-6 bg-gray-50">
-        <h3 className="text-lg font-semibold mb-3">Code Example</h3>
+        <h3 className="text-lg font-semibold mb-3">コード例</h3>
         <p className="text-sm text-gray-600 mb-3">
-          TanStack DB supports native cross-collection JOINs using the{' '}
+          TanStack DB は{' '}
           <code className="bg-gray-700 text-gray-100 px-1 rounded">
             .join()
           </code>{' '}
-          method. Use aliases in{' '}
+          メソッドを使用してネイティブなコレクション間 JOIN
+          をサポートしています。 名前の競合を避けるため、{' '}
           <code className="bg-gray-700 text-gray-100 px-1 rounded">
             .select()
           </code>{' '}
-          to avoid naming conflicts.
+          でエイリアスを使用します。
         </p>
         <pre className="text-xs bg-gray-800 text-gray-100 p-4 rounded overflow-x-auto">
           {`// Multi-table JOIN with INNER JOIN and LEFT JOIN
