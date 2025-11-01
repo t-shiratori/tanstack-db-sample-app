@@ -5,9 +5,9 @@ import { createCollection } from "@tanstack/react-db";
 import { queryClient } from "@/app/lib/queryClient";
 import { errorSimulation } from "@/lib/errorSimulation";
 import { notification } from "@/lib/notification";
+import type { Category } from "@/types/category";
 import type { Todo } from "@/types/todo";
 import type { User } from "@/types/user";
-import type { Category } from "@/types/category";
 
 // TanStack DB Collection for Todos
 // This demonstrates the three pillars of TanStack DB:

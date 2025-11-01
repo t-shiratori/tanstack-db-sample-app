@@ -1,6 +1,7 @@
 "use client";
 
 import { eq, useLiveQuery } from "@tanstack/react-db";
+import Image from "next/image";
 import { categoryCollection, todoCollection, userCollection } from "@/app/db/collections";
 
 /**
@@ -97,7 +98,13 @@ export function TodosWithUserAndCategory() {
             <div key={todo.id} className="bg-white p-4 rounded shadow-sm">
               <div className="flex items-center gap-3">
                 {todo.userAvatar && (
-                  <img src={todo.userAvatar} alt={todo.userName} className="w-10 h-10 rounded-full" />
+                  <Image
+                    src={todo.userAvatar}
+                    alt={todo.userName}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
                 )}
                 <div className="flex-1">
                   <div className="font-medium">{todo.title}</div>
@@ -154,7 +161,13 @@ export function TodosWithUserAndCategory() {
             <div key={todo.id} className="bg-white p-4 rounded shadow-sm">
               <div className="flex items-center gap-3">
                 {todo.userAvatar && (
-                  <img src={todo.userAvatar} alt={todo.userName} className="w-10 h-10 rounded-full" />
+                  <Image
+                    src={todo.userAvatar}
+                    alt={todo.userName}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
                 )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
