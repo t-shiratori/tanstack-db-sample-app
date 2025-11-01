@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { todoCollection } from '@/app/db/collections';
-import type { Todo } from '@/types/todo';
+import { todoCollection } from "@/app/db/collections";
+import type { Todo } from "@/types/todo";
 
 interface TodoItemProps {
   todo: Todo;
@@ -33,21 +33,15 @@ export function TodoItem({ todo }: TodoItemProps) {
       />
 
       {/* Todo title */}
-      <span
-        className={`flex-1 ${
-          todo.completed ? 'line-through text-gray-400' : 'text-gray-800'
-        }`}
-      >
-        {todo.title}
-      </span>
+      <span className={`flex-1 ${todo.completed ? "line-through text-gray-400" : "text-gray-800"}`}>{todo.title}</span>
 
       {/* Created date */}
       <span className="text-xs text-gray-400">
-        {new Date(todo.createdAt).toLocaleString('ja-JP', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
+        {new Date(todo.createdAt).toLocaleString("ja-JP", {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         })}
       </span>
 
