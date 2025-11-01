@@ -1,6 +1,6 @@
+import type { Category } from "@/types/category";
 import type { Todo } from "@/types/todo";
 import type { User } from "@/types/user";
-import type { Category } from "@/types/category";
 
 // In-memory database
 const users: User[] = [
@@ -8,19 +8,19 @@ const users: User[] = [
     id: "user-1",
     name: "Alice Johnson",
     email: "alice@example.com",
-    avatar: "https://i.pravatar.cc/150?u=alice",
+    avatar: "https://i.pravatar.cc/150?img=58",
   },
   {
     id: "user-2",
     name: "Bob Smith",
     email: "bob@example.com",
-    avatar: "https://i.pravatar.cc/150?u=bob",
+    avatar: "https://i.pravatar.cc/150?img=10",
   },
   {
     id: "user-3",
     name: "Carol Williams",
     email: "carol@example.com",
-    avatar: "https://i.pravatar.cc/150?u=carol",
+    avatar: "https://i.pravatar.cc/150?img=28",
   },
 ];
 
