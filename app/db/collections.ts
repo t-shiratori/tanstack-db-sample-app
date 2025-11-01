@@ -6,6 +6,8 @@ import { queryClient } from "@/app/lib/queryClient";
 import { errorSimulation } from "@/lib/errorSimulation";
 import { notification } from "@/lib/notification";
 import type { Todo } from "@/types/todo";
+import type { User } from "@/types/user";
+import type { Category } from "@/types/category";
 
 // TanStack DB Collection for Todos
 // This demonstrates the three pillars of TanStack DB:
@@ -111,5 +113,41 @@ export const todoCollection = createCollection(
 
       return response.json();
     },
+  }),
+);
+
+// User Collection
+// Demonstrates basic collection setup with minimal configuration
+export const userCollection = createCollection(
+  queryCollectionOptions<User>({
+    queryClient,
+    queryKey: ["users"],
+    queryFn: async () => {
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+      const response = await fetch(`${baseUrl}/api/users`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      return response.json();
+    },
+    getKey: (item) => item.id,
+  }),
+);
+
+// Category Collection
+// Demonstrates basic collection setup for taxonomy/reference data
+export const categoryCollection = createCollection(
+  queryCollectionOptions<Category>({
+    queryClient,
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+      const response = await fetch(`${baseUrl}/api/categories`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      return response.json();
+    },
+    getKey: (item) => item.id,
   }),
 );

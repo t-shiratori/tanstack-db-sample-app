@@ -42,6 +42,17 @@ const ToastContainer = dynamic(
   },
 );
 
+const TodosWithUserAndCategory = dynamic(
+  () =>
+    import("./components/TodosWithUserAndCategory").then((mod) => ({
+      default: mod.TodosWithUserAndCategory,
+    })),
+  {
+    ssr: false,
+    loading: () => <div className="text-center py-8 text-gray-500">Loading JOIN examples...</div>,
+  },
+);
+
 export default function Home() {
   return (
     <NotificationProvider>
@@ -98,6 +109,13 @@ export default function Home() {
                   automatically rollback on server errors
                 </li>
               </ul>
+            </div>
+
+            {/* JOIN Examples section */}
+            <div className="mt-8 bg-white rounded-xl shadow-lg p-8">
+              <Suspense fallback={<div className="text-center py-8 text-gray-500">Loading JOIN examples...</div>}>
+                <TodosWithUserAndCategory />
+              </Suspense>
             </div>
           </div>
         </main>

@@ -1,6 +1,16 @@
 {
   "permissions": {
-    "allow": ["Bash(pnpm view:*)", "Bash(pnpm dev:*)", "Bash(pnpm add:*)", "Bash(pnpm biome:*)"],
+    "allow": [
+      "Bash(pnpm view:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm biome:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:tanstack.com)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm why:*)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
