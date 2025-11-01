@@ -19,7 +19,7 @@ export const todoCollection = createCollection(
     getKey: (item) => item.id,
     onUpdate: async ({ transaction }) => { /* 更新処理 */ },
     onDelete: async ({ transaction }) => { /* 削除処理 */ },
-    onCreate: async ({ transaction }) => { /* 作成処理 */ },
+    onInsert: async ({ transaction }) => { /* 作成処理 */ },
   })
 )
 ```
@@ -37,8 +37,26 @@ const { data: todos } = useLiveQuery((q) =>
 )
 ```
 
+**コレクション間JOIN**: [app/components/TodosWithUserAndCategory.tsx](app/components/TodosWithUserAndCategory.tsx)
+
+```typescript
+// INNER JOIN の例
+const { data: todosWithUsers } = useLiveQuery((query) =>
+  query
+    .from({ t: todoCollection })
+    .innerJoin({ u: userCollection }, ({ t, u }) => eq(t.userId, u.id))
+    .select(({ t, u }) => ({
+      id: t.id,
+      title: t.title,
+      userName: u.name,
+      userAvatar: u.avatar,
+    }))
+    .orderBy(({ t }) => t.createdAt, 'desc')
+)
+```
+
 ### 3. Optimistic Mutations (楽観的更新)
-UIを即座に更新し、バックグラウンドでサーバーと同期します。
+UIを即座に更新し、バックグラウンドでサーバーと同期します。エラー時は自動的にロールバックされます。
 
 **実装箇所**: [app/components/TodoItem.tsx](app/components/TodoItem.tsx)
 
@@ -52,13 +70,15 @@ const handleToggle = () => {
 
 ## 技術スタック
 
-- **Next.js 15** - App Router使用
-- **TypeScript** - 型安全性
+- **Next.js 16.0.0** - App Router使用
+- **React 19.0.0** - 最新のReact機能
+- **TypeScript 5.7.2** - 型安全性
 - **TanStack DB** - リアクティブなクライアントストア
-  - `@tanstack/react-db` - React統合
-  - `@tanstack/query-db-collection` - TanStack Query連携
+  - `@tanstack/react-db` 0.1.38 - React統合
+  - `@tanstack/query-db-collection` 0.2.39 - TanStack Query連携
 - **TanStack Query** - データフェッチング
 - **Tailwind CSS** - スタイリング
+- **Biome** - リンター・フォーマッター
 
 ## セットアップ
 
@@ -97,8 +117,11 @@ pnpm build
 # 本番サーバー起動
 pnpm start
 
-# Lint実行
-pnpm lint
+# Biome チェック
+pnpm biome:check
+
+# Biome 自動修正
+pnpm biome:fix
 ```
 
 ## プロジェクト構造
@@ -107,62 +130,158 @@ pnpm lint
 tanstack-db/
 ├── app/
 │   ├── api/
-│   │   └── todos/              # REST API エンドポイント
-│   │       ├── route.ts        # GET, POST
-│   │       └── [id]/route.ts   # PUT, DELETE
+│   │   ├── todos/              # Todo REST API エンドポイント
+│   │   │   ├── route.ts        # GET, POST
+│   │   │   └── [id]/route.ts   # PUT, DELETE
+│   │   ├── users/              # User API エンドポイント
+│   │   │   └── route.ts        # GET
+│   │   └── categories/         # Category API エンドポイント
+│   │       └── route.ts        # GET
 │   ├── components/
-│   │   ├── TodoList.tsx        # ライブクエリ使用
-│   │   ├── TodoItem.tsx        # 楽観的更新使用
-│   │   └── AddTodoForm.tsx     # Todo作成
+│   │   ├── TodoList.tsx                  # ライブクエリでフィルタリング
+│   │   ├── TodoItem.tsx                  # 楽観的更新（完了/削除/カテゴリ変更）
+│   │   ├── AddTodoForm.tsx               # Todo作成（カテゴリ選択可能）
+│   │   ├── TodosWithUserAndCategory.tsx  # コレクション間JOIN例
+│   │   ├── ErrorSimulationToggle.tsx     # エラーシミュレーション切り替え
+│   │   └── ToastContainer.tsx            # 通知表示
+│   ├── contexts/
+│   │   ├── ErrorSimulationContext.tsx    # エラーシミュレーション状態管理
+│   │   └── NotificationContext.tsx       # 通知状態管理
 │   ├── db/
-│   │   └── collections.ts      # TanStack DBコレクション定義
-│   ├── providers/
-│   │   └── QueryProvider.tsx   # TanStack Query設定
-│   ├── layout.tsx              # ルートレイアウト
-│   ├── page.tsx                # メインページ
-│   └── globals.css             # グローバルスタイル
+│   │   └── collections.ts                # TanStack DBコレクション定義
+│   ├── lib/
+│   │   └── queryClient.ts                # TanStack Query設定
+│   ├── layout.tsx                        # ルートレイアウト
+│   ├── page.tsx                          # メインページ
+│   └── globals.css                       # グローバルスタイル
 ├── lib/
-│   └── db.ts                   # インメモリDB (サンプル用)
+│   ├── db.ts                   # インメモリDB (サンプル用)
+│   ├── errorSimulation.ts      # エラーシミュレーション機能
+│   └── notification.ts         # 通知機能
 ├── types/
-│   └── todo.ts                 # 型定義
+│   ├── todo.ts                 # Todo型定義
+│   ├── user.ts                 # User型定義
+│   └── category.ts             # Category型定義
+├── next.config.js
+├── tailwind.config.ts
 └── package.json
 ```
 
-## 機能
+## 主要機能
 
-- ✅ Todo追加
+### 基本機能
+- ✅ Todo追加（タイトル入力 + カテゴリ選択）
 - ✅ Todo完了/未完了切り替え
+- ✅ カテゴリ設定・変更（クリックで選択）
 - ✅ Todo削除
-- ✅ フィルタリング (全て/アクティブ/完了済み)
-- ✅ 日付でソート (新しい順)
+- ✅ フィルタリング（全て/未完了/完了）
+- ✅ 日付でソート（新しい順）
 - ✅ 楽観的更新による即座のUI反映
 - ✅ バックエンドAPIとの自動同期
 
+### 高度な機能
+- ✅ **コレクション間JOIN**: TodoとUser、Categoryの関連データ表示
+  - INNER JOIN例：Todo → User
+  - LEFT JOIN例：Todo → Category（オプショナル）
+  - 複数テーブルJOIN例：Todo → User + Category
+- ✅ **エラーシミュレーション**: 楽観的更新のロールバック動作を確認可能
+- ✅ **リアルタイム通知**: 操作成功/失敗を通知
+
+### データモデル
+
+**Todo**
+- id: string
+- title: string
+- completed: boolean
+- createdAt: number
+- userId: string（作成者）
+- categoryId?: string（カテゴリ、オプショナル）
+
+**User**
+- id: string
+- name: string
+- email: string
+- avatar?: string
+
+**Category**
+- id: string
+- name: string
+- color: string
+- description?: string
+
 ## 学習ポイント
 
-### コレクションの理解
+### 1. コレクションの理解
 
-[app/db/collections.ts](app/db/collections.ts:17-45) を確認してください。
+[app/db/collections.ts](app/db/collections.ts) を確認してください。
 
 - `queryFn`: 初期データの取得方法
 - `getKey`: 各アイテムの一意なキーの取得
-- `onUpdate/onCreate/onDelete`: サーバー同期処理
+- `onUpdate/onInsert/onDelete`: サーバー同期処理（エラーハンドリング含む）
 
-### ライブクエリの理解
+### 2. ライブクエリの理解
 
-[app/components/TodoList.tsx](app/components/TodoList.tsx:15-38) を確認してください。
+**基本的なクエリ**: [app/components/TodoList.tsx](app/components/TodoList.tsx:15-31)
 
-- `useLiveQuery`: リアクティブなクエリフック
-- `where`: フィルタリング条件
-- `orderBy`: ソート条件
+```typescript
+// フィルタリングとソート
+const { data: activeTodos } = useLiveQuery((q) =>
+  q
+    .from({ todo: todoCollection })
+    .where(({ todo }) => eq(todo.completed, false))
+    .orderBy(({ todo }) => todo.createdAt, 'desc')
+)
+```
 
-### 楽観的更新の理解
+**コレクション間JOIN**: [app/components/TodosWithUserAndCategory.tsx](app/components/TodosWithUserAndCategory.tsx:56-72)
 
-[app/components/TodoItem.tsx](app/components/TodoItem.tsx:13-22) を確認してください。
+```typescript
+// 複数テーブルJOIN
+const { data: todosWithAll } = useLiveQuery((query) =>
+  query
+    .from({ t: todoCollection })
+    .innerJoin({ u: userCollection }, ({ t, u }) => eq(t.userId, u.id))
+    .leftJoin({ c: categoryCollection }, ({ t, c }) => eq(t.categoryId, c.id))
+    .select(({ t, u, c }) => ({
+      id: t.id,
+      title: t.title,
+      userName: u.name,
+      categoryName: c?.name,  // LEFT JOINのためオプショナル
+    }))
+    .orderBy(({ t }) => t.createdAt, 'desc')
+)
+```
+
+### 3. 楽観的更新の理解
+
+[app/components/TodoItem.tsx](app/components/TodoItem.tsx:23-35) を確認してください。
+
+```typescript
+// 完了状態の切り替え
+const handleToggle = () => {
+  todoCollection.update(todo.id, (draft) => {
+    draft.completed = !draft.completed
+  })
+}
+
+// カテゴリの変更
+const handleCategoryChange = (newCategoryId: string | undefined) => {
+  todoCollection.update(todo.id, (draft) => {
+    draft.categoryId = newCategoryId
+  })
+}
+```
 
 - `collection.update()`: 即座にUIを更新
 - `collection.delete()`: 即座にアイテムを削除
+- `collection.insert()`: 即座にアイテムを追加
 - エラー時は自動的にロールバック
+
+### 4. エラーハンドリングとロールバック
+
+エラーシミュレーションモードを有効にすると、すべての更新操作が失敗し、楽観的更新が自動的にロールバックされる様子を確認できます。
+
+[app/components/ErrorSimulationToggle.tsx](app/components/ErrorSimulationToggle.tsx)
 
 ## データフロー
 
@@ -173,7 +292,7 @@ tanstack-db/
    ↓
 3. Backend API Request (非同期でサーバーリクエスト)
    ↓
-4. Success → UI維持 / Error → ロールバック
+4. Success → UI維持 / Error → ロールバック + 通知表示
    ↓
 5. Live Query (自動的に再レンダリング)
 ```
@@ -184,6 +303,35 @@ tanstack-db/
 2. **リアクティブ** - データ変更時に関連するコンポーネントが自動的に再レンダリングされます
 3. **型安全** - TypeScriptによる完全な型サポート
 4. **シンプルなAPI** - 直感的で使いやすいAPI設計
+5. **コレクション間JOIN** - SQLライクなJOIN構文でリレーショナルデータを扱える
+6. **自動エラーハンドリング** - エラー時の自動ロールバック
+
+## JOIN機能の詳細
+
+TanStack DBは、複数のコレクション間でSQLライクなJOINをサポートしています。
+
+### INNER JOIN
+両方のコレクションにマッチするデータのみ取得
+```typescript
+.innerJoin({ u: userCollection }, ({ t, u }) => eq(t.userId, u.id))
+```
+
+### LEFT JOIN
+左側のコレクションの全データと、右側のマッチするデータを取得（右側はオプショナル）
+```typescript
+.leftJoin({ c: categoryCollection }, ({ t, c }) => eq(t.categoryId, c.id))
+```
+
+### 複数テーブルJOIN
+複数のコレクションを組み合わせることも可能
+```typescript
+query
+  .from({ t: todoCollection })
+  .innerJoin({ u: userCollection }, ({ t, u }) => eq(t.userId, u.id))
+  .leftJoin({ c: categoryCollection }, ({ t, c }) => eq(t.categoryId, c.id))
+```
+
+詳細は [app/components/TodosWithUserAndCategory.tsx](app/components/TodosWithUserAndCategory.tsx) を参照してください。
 
 ## 参考リンク
 
