@@ -22,6 +22,8 @@ export function AddTodoForm() {
         title: title.trim(),
         completed: false,
         createdAt: Date.now(),
+        userId: "user-1", // Default user
+        categoryId: undefined, // No category by default
       });
 
       setTitle("");
