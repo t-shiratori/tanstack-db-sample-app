@@ -2,7 +2,7 @@
 
 TanStack DBの主要機能を学習するためのシンプルなTodoアプリケーションです。
 
-<img width="700" alt="screencapture-localhost" src="https://github.com/user-attachments/assets/60503498-dc56-4e47-b7f8-59ad3769abc1" />
+<img width="700" alt="screencapture-localhost-3000-2025-11-02-20_29_16" src="https://github.com/user-attachments/assets/48aa2c5f-461e-4dc9-971c-12df8a78e370" />
 
 
 ## TanStack DBの3つの柱
