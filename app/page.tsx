@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorSimulationProvider } from "./contexts/ErrorSimulationContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
@@ -60,6 +61,16 @@ export default function Home() {
         <ToastContainer />
         <main className="min-h-screen py-12 px-4">
           <div className="max-w-3xl mx-auto">
+            {/* Navigation */}
+            <div className="mb-6 flex justify-end">
+              <Link
+                href="/pessimistic"
+                className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium"
+              >
+                悲観的更新版を見る →
+              </Link>
+            </div>
+
             {/* Header */}
             <div className="text-center mb-12">
               <h1 className="text-4xl font-bold text-gray-800 mb-3">TanStack DB Sample</h1>
