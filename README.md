@@ -64,12 +64,33 @@ UIを即座に更新し、バックグラウンドでサーバーと同期しま
 **実装箇所**: [app/components/TodoItem.tsx](app/components/TodoItem.tsx)
 
 ```typescript
+// 楽観的更新（デフォルト）- 即座にUI更新
 const handleToggle = () => {
   todoCollection.update(todo.id, (draft) => {
     draft.completed = !draft.completed
   })
 }
 ```
+
+**悲観的更新版との比較**: [app/pessimistic/page.tsx](app/pessimistic/page.tsx)
+
+```typescript
+// 悲観的更新 - サーバー確認まで待機
+const handleToggle = async () => {
+  const tx = todoCollection.update(
+    todo.id,
+    { optimistic: false }, // ← 楽観的更新をオフ
+    (draft) => {
+      draft.completed = !draft.completed
+    }
+  )
+  await tx.isPersisted.promise // サーバー完了まで待つ
+}
+```
+
+このサンプルでは、**2つのバージョン**を用意しており、体感の違いを比較できます：
+- **楽観的更新版** (`/`) - 即座にUI更新 ⚡
+- **悲観的更新版** (`/pessimistic`) - サーバー確認後にUI更新 🐢
 
 ## 技術スタック
 
@@ -109,7 +130,9 @@ pnpm install
 pnpm dev
 ```
 
-ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
+ブラウザで以下のURLを開いてください：
+- **楽観的更新版**: [http://localhost:3000](http://localhost:3000)
+- **悲観的更新版**: [http://localhost:3000/pessimistic](http://localhost:3000/pessimistic)
 
 ### その他のコマンド
 
@@ -141,22 +164,27 @@ tanstack-db/
 │   │   └── categories/         # Category API エンドポイント
 │   │       └── route.ts        # GET
 │   ├── components/
-│   │   ├── TodoList.tsx                  # ライブクエリでフィルタリング
-│   │   ├── TodoItem.tsx                  # 楽観的更新（完了/削除/カテゴリ変更）
-│   │   ├── AddTodoForm.tsx               # Todo作成（カテゴリ選択可能）
-│   │   ├── TodosWithUserAndCategory.tsx  # コレクション間JOIN例
-│   │   ├── ErrorSimulationToggle.tsx     # エラーシミュレーション切り替え
-│   │   └── ToastContainer.tsx            # 通知表示
+│   │   ├── TodoList.tsx                      # ライブクエリでフィルタリング
+│   │   ├── TodoItem.tsx                      # 楽観的更新（完了/削除/カテゴリ変更）
+│   │   ├── AddTodoForm.tsx                   # Todo作成（カテゴリ選択可能）
+│   │   ├── PessimisticTodoList.tsx           # 悲観的更新版リスト
+│   │   ├── PessimisticTodoItem.tsx           # 悲観的更新版アイテム
+│   │   ├── PessimisticAddTodoForm.tsx        # 悲観的更新版フォーム
+│   │   ├── TodosWithUserAndCategory.tsx      # コレクション間JOIN例
+│   │   ├── ErrorSimulationToggle.tsx         # エラーシミュレーション切り替え
+│   │   └── ToastContainer.tsx                # 通知表示
 │   ├── contexts/
-│   │   ├── ErrorSimulationContext.tsx    # エラーシミュレーション状態管理
-│   │   └── NotificationContext.tsx       # 通知状態管理
+│   │   ├── ErrorSimulationContext.tsx        # エラーシミュレーション状態管理
+│   │   └── NotificationContext.tsx           # 通知状態管理
 │   ├── db/
-│   │   └── collections.ts                # TanStack DBコレクション定義
+│   │   └── collections.ts                    # TanStack DBコレクション定義
 │   ├── lib/
-│   │   └── queryClient.ts                # TanStack Query設定
-│   ├── layout.tsx                        # ルートレイアウト
-│   ├── page.tsx                          # メインページ
-│   └── globals.css                       # グローバルスタイル
+│   │   └── queryClient.ts                    # TanStack Query設定
+│   ├── pessimistic/
+│   │   └── page.tsx                          # 悲観的更新版メインページ
+│   ├── layout.tsx                            # ルートレイアウト
+│   ├── page.tsx                              # 楽観的更新版メインページ
+│   └── globals.css                           # グローバルスタイル
 ├── lib/
 │   ├── db.ts                   # インメモリDB (サンプル用)
 │   ├── errorSimulation.ts      # エラーシミュレーション機能
@@ -177,10 +205,15 @@ tanstack-db/
 - ✅ Todo完了/未完了切り替え
 - ✅ カテゴリ設定・変更（クリックで選択）
 - ✅ Todo削除
-- ✅ フィルタリング（全て/未完了/完了）
+- ✅ フィルタリング（すべて/未完了/完了）
 - ✅ 日付でソート（新しい順）
 - ✅ 楽観的更新による即座のUI反映
 - ✅ バックエンドAPIとの自動同期
+
+### 2つのバージョン
+- ✅ **楽観的更新版** (`/`) - サーバー確認を待たずに即座にUI更新 ⚡
+- ✅ **悲観的更新版** (`/pessimistic`) - サーバー確認後にUI更新 🐢
+- ✅ ページ間でナビゲーション可能、体感の違いを比較できる
 
 ### 高度な機能
 - ✅ **コレクション間JOIN**: TodoとUser、Categoryの関連データ表示
@@ -257,20 +290,13 @@ const { data: todosWithAll } = useLiveQuery((query) =>
 
 ### 3. 楽観的更新の理解
 
-[app/components/TodoItem.tsx](app/components/TodoItem.tsx:23-35) を確認してください。
+**楽観的更新版**: [app/components/TodoItem.tsx](app/components/TodoItem.tsx:23-35)
 
 ```typescript
-// 完了状態の切り替え
+// 完了状態の切り替え（楽観的更新）
 const handleToggle = () => {
   todoCollection.update(todo.id, (draft) => {
     draft.completed = !draft.completed
-  })
-}
-
-// カテゴリの変更
-const handleCategoryChange = (newCategoryId: string | undefined) => {
-  todoCollection.update(todo.id, (draft) => {
-    draft.categoryId = newCategoryId
   })
 }
 ```
@@ -279,6 +305,32 @@ const handleCategoryChange = (newCategoryId: string | undefined) => {
 - `collection.delete()`: 即座にアイテムを削除
 - `collection.insert()`: 即座にアイテムを追加
 - エラー時は自動的にロールバック
+
+**悲観的更新版**: [app/components/PessimisticTodoItem.tsx](app/components/PessimisticTodoItem.tsx:23-38)
+
+```typescript
+// 完了状態の切り替え（悲観的更新）
+const handleToggle = async () => {
+  setIsUpdating(true)
+  try {
+    const tx = todoCollection.update(
+      todo.id,
+      { optimistic: false }, // ← 楽観的更新をオフ
+      (draft) => {
+        draft.completed = !draft.completed
+      }
+    )
+    await tx.isPersisted.promise // サーバー確認まで待つ
+  } finally {
+    setIsUpdating(false)
+  }
+}
+```
+
+- `{ optimistic: false }`: 楽観的更新を無効化
+- `tx.isPersisted.promise`: サーバー処理完了まで待機
+- UI更新が遅くなるが、データ整合性が保証される
+- ローディング状態の管理が必要
 
 ### 4. エラーハンドリングとロールバック
 
@@ -308,6 +360,63 @@ const handleCategoryChange = (newCategoryId: string | undefined) => {
 4. **シンプルなAPI** - 直感的で使いやすいAPI設計
 5. **コレクション間JOIN** - SQLライクなJOIN構文でリレーショナルデータを扱える
 6. **自動エラーハンドリング** - エラー時の自動ロールバック
+7. **柔軟性** - `optimistic: false` で悲観的更新にも対応可能
+
+## 楽観的更新 vs 悲観的更新
+
+このサンプルでは、両方のアプローチを実装しており、実際に体感できます。
+
+### 楽観的更新（推奨） ⚡
+
+**メリット:**
+- ✅ 即座にUI更新（UXが良い）
+- ✅ サーバー遅延の影響を受けない
+- ✅ エラー時の自動ロールバック
+
+**デメリット:**
+- ❌ 実装がやや複雑
+- ❌ エラー時のロールバックが視覚的に見える
+
+**使用例:**
+```typescript
+// デフォルトで楽観的更新が有効
+todoCollection.update(id, (draft) => { draft.completed = true })
+```
+
+### 悲観的更新 🐢
+
+**メリット:**
+- ✅ 実装がシンプル
+- ✅ データ整合性が常に保証される
+- ✅ サーバー確認後の更新で安心
+
+**デメリット:**
+- ❌ UI更新が遅い（約1.5秒の遅延）
+- ❌ UXが悪い
+- ❌ ローディング状態の管理が必要
+
+**使用例:**
+```typescript
+// optimistic: false で悲観的更新
+const tx = todoCollection.update(id, { optimistic: false }, (draft) => {
+  draft.completed = true
+})
+await tx.isPersisted.promise
+```
+
+### どちらを選ぶべきか？
+
+| シナリオ | 推奨 |
+|---------|-----|
+| 一般的なCRUD操作 | 楽観的更新 ⚡ |
+| サーバー側で複雑な処理がある | 悲観的更新 🐢 |
+| バリデーション結果を待つ必要がある | 悲観的更新 🐢 |
+| リアルタイム性が重要 | 楽観的更新 ⚡ |
+| データ整合性が最重要 | 悲観的更新 🐢 |
+
+**このサンプルアプリで体験してみてください！**
+- `/` - 楽観的更新版（即座にUI更新）
+- `/pessimistic` - 悲観的更新版（サーバー確認後に更新）
 
 ## JOIN機能の詳細
 
