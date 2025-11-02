@@ -25,8 +25,7 @@ export const todoCollection = createCollection(
 
     // Fetch function to load initial data
     queryFn: async () => {
-      const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
-      const response = await fetch(`${baseUrl}/api/todos`);
+      const response = await fetch("/api/todos");
       if (!response.ok) {
         throw new Error("Failed to fetch todos");
       }
@@ -125,8 +124,7 @@ export const userCollection = createCollection(
     queryClient,
     queryKey: ["users"],
     queryFn: async () => {
-      const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
-      const response = await fetch(`${baseUrl}/api/users`);
+      const response = await fetch("/api/users");
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -143,8 +141,7 @@ export const categoryCollection = createCollection(
     queryClient,
     queryKey: ["categories"],
     queryFn: async () => {
-      const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
-      const response = await fetch(`${baseUrl}/api/categories`);
+      const response = await fetch("/api/categories");
       if (!response.ok) {
         throw new Error("Failed to fetch categories");
       }
